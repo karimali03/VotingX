@@ -1,0 +1,71 @@
+-- For Election 2 (Popular vote, multi-choice=2, 4 candidates, 3 groups)
+
+
+-- Elementary School Parents Group
+INSERT INTO GroupDistricts (group_id, district_id, election_id) VALUES
+(5, 1, 2), -- Downtown LA
+(5, 3, 2), -- Mission District SF
+(5, 5, 2), -- Manhattan
+(5, 7, 2); -- Downtown Houston
+
+-- Middle School Parents Group
+INSERT INTO GroupDistricts (group_id, district_id, election_id) VALUES
+(6, 2, 2), -- Hollywood
+(6, 4, 2), -- SoMa
+(6, 6, 2), -- Brooklyn
+(6, 8, 2); -- Uptown Dallas
+
+-- High School Parents Group
+INSERT INTO GroupDistricts (group_id, district_id, election_id) VALUES
+(7, 9, 2), -- South Beach Miami
+(7, 10, 2), -- Disney Area Orlando
+(7, 11, 2), -- Downtown Toronto
+(7, 12, 2); -- East End Ottawa
+
+
+
+-- Simulating votes for Election 2 (Note: need to handle multi-choice in encrypted_candidates)
+INSERT INTO VoteDetails (hashed_user_id, group_id, timestamp) VALUES
+-- Elementary School votes (Group 5)
+(SHA2(9, 256), 5, '2025-07-15 09:15:00'),
+(SHA2(10, 256), 5, '2025-07-15 10:20:00'),
+(SHA2(15, 256), 5, '2025-07-15 11:30:00'),
+(SHA2(25, 256), 5, '2025-07-15 12:45:00'),
+-- Middle School votes (Group 6)
+(SHA2(16, 256), 6, '2025-07-15 09:30:00'),
+(SHA2(17, 256), 6, '2025-07-15 10:40:00'),
+(SHA2(26, 256), 6, '2025-07-15 11:50:00'),
+(SHA2(27, 256), 6, '2025-07-15 13:00:00'),
+-- High School votes (Group 7)
+(SHA2(18, 256), 7, '2025-07-15 09:45:00'),
+(SHA2(19, 256), 7, '2025-07-15 10:55:00'),
+(SHA2(28, 256), 7, '2025-07-15 12:05:00'),
+(SHA2(29, 256), 7, '2025-07-15 13:15:00');
+
+
+-- For Election 2 (multi-choice=2)
+INSERT INTO encrypted_candidates (vote_id, encrypted_candidate, iv) VALUES
+(17, 'EB5dXB31YVwpZGQEK4W45Q==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(17, 'E3qavltnKsYOte0eaDmQ4g==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(18, 'E3qavltnKsYOte0eaDmQ4g==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(18, 'BexJCVfQC0UNJ0UvM8u21Q==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(19, 'BexJCVfQC0UNJ0UvM8u21Q==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(19, 'j79BR4G9vQAAvu63/PnLtg==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(20, 'BexJCVfQC0UNJ0UvM8u21Q==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(20, 'j79BR4G9vQAAvu63/PnLtg==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(21, 'EB5dXB31YVwpZGQEK4W45Q==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(21, 'E3qavltnKsYOte0eaDmQ4g==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(22, 'E3qavltnKsYOte0eaDmQ4g==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(22, 'j79BR4G9vQAAvu63/PnLtg==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(23, 'EB5dXB31YVwpZGQEK4W45Q==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(23, 'BexJCVfQC0UNJ0UvM8u21Q==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(24, 'BexJCVfQC0UNJ0UvM8u21Q==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(24, 'j79BR4G9vQAAvu63/PnLtg==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(25, 'EB5dXB31YVwpZGQEK4W45Q==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(25, 'E3qavltnKsYOte0eaDmQ4g==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(26, 'E3qavltnKsYOte0eaDmQ4g==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(26, 'j79BR4G9vQAAvu63/PnLtg==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(27, 'E3qavltnKsYOte0eaDmQ4g==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(27, 'j79BR4G9vQAAvu63/PnLtg==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(28, 'EB5dXB31YVwpZGQEK4W45Q==', UNHEX('000102030405060708090A0B0C0D0E0F')),
+(28, 'E3qavltnKsYOte0eaDmQ4g==', UNHEX('000102030405060708090A0B0C0D0E0F'));
