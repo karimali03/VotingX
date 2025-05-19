@@ -10,6 +10,122 @@ All endpoints except authentication endpoints require a valid JWT token in the A
 Authorization: Bearer <your_jwt_token>
 ```
 
+## Authentication Endpoints
+
+### Sign In
+```http
+POST /api/v1/auth/signin
+Content-Type: application/json
+
+Request Body:
+{
+    "email": "user@example.com",
+    "password": "yourpassword"
+}
+
+Response 200:
+{
+    "message": "Sign in successful",
+    "data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "user": {
+            "id": 1,
+            "email": "user@example.com",
+            "first_name": "John",
+            "last_name": "Doe",
+            "role": "user",
+            ...
+        }
+    }
+}
+```
+
+### Sign Up
+```http
+POST /api/v1/auth/signup
+Content-Type: application/json
+
+Request Body:
+{
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "user@example.com",
+    "password": "yourpassword",
+    "confirm_password": "yourpassword",
+    "phone": "+1234567890",
+    "gender": "male",
+    "birth_date": "1990-01-01"
+}
+
+Response 201:
+{
+    "message": "User registered successfully",
+    "data": {
+        "id": 1,
+        "email": "user@example.com",
+        "first_name": "John",
+        "last_name": "Doe",
+        "role": "user"
+    }
+}
+```
+
+### Forgot Password
+```http
+POST /api/v1/auth/forgot-password
+Content-Type: application/json
+
+Request Body:
+{
+    "email": "user@example.com"
+}
+
+Response 200:
+{
+    "message": "Password reset email sent successfully",
+    "data": null
+}
+```
+
+### Reset Password
+```http
+POST /api/v1/auth/reset-password
+Content-Type: application/json
+
+Request Body:
+{
+    "token": "reset_token_received_via_email",
+    "new_password": "newpassword",
+    "confirm_password": "newpassword"
+}
+
+Response 200:
+{
+    "message": "Password reset successful",
+    "data": null
+}
+```
+
+### Change Password (Authenticated)
+```http
+POST /api/v1/auth/change-password
+Authorization: Bearer <token>
+Content-Type: application/json
+
+Request Body:
+{
+    "current_password": "currentpassword",
+    "new_password": "newpassword",
+    "confirm_password": "newpassword"
+}
+
+Response 200:
+{
+    "message": "Password changed successfully",
+    "data": null
+}
+```
+
 ## User Management Endpoints
 
 ### Get All Users (Admin Only)
