@@ -3,6 +3,7 @@ import mailService from '../utils/mail.service.js';
 import bcrypt from '../utils/bcrypt.js';
 import asyncFun from '../middlewares/async.function.js';
 import User from '../models/user.model.js';
+
 // Helper function to sign JWT tokens
 const signToken = (userId, role) => {
     return jwt.sign({ userId, role }, process.env.JWT_SECRET, { expiresIn: '1d' });
@@ -11,9 +12,12 @@ const signToken = (userId, role) => {
 class authController {
     // Signup handler
     static signup = asyncFun(async (req, res) => {
-        const { first_name, last_name, gender, birth_date, email, password, phone, current_address, profile_image, middle_name } = req.body;
+        const {
+            first_name, last_name, gender, birth_date,
+            email, password, phone,
+            current_address, profile_image, middle_name
+        } = req.body;
 
-        // Validate required fields
         if (!first_name || !last_name || !gender || !birth_date || !email || !password) {
             return res.status(400).send({ message: "Missing required fields" });
         }
@@ -22,6 +26,7 @@ class authController {
         if (isExist) return res.status(400).send({ message: "Email already exists" });
 
         const hashedPassword = await bcrypt.hashPassword(password);
+
         const userData = {
             first_name,
             middle_name: middle_name || null,
@@ -35,29 +40,44 @@ class authController {
             account_verified: false,
             profile_image: profile_image || null
         };
+
         const newUser = await User.createUser(userData);
 
         const mailer = new mailService();
-        // Generate verification token (JWT)
-        const verificationToken = signToken(newUser.id);
-        const verificationLink = `${process.env.URL}/api/v1/user/verify-email?token=${verificationToken}`;
-        
-        // Send verification email
+        const verificationToken = signToken(newUser.id, newUser.role);
+        const verificationLink = `${process.env.URL}/api/v1/auth/verify-email?token=${verificationToken}`;
+
         await mailer.sendVerificationEmail(email, verificationLink);
 
-        res.status(201).send({ message: "Check your email to verify your account", data: newUser });
+        res.status(201).send({
+            message: "Check your email to verify your account",
+            data: newUser
+        });
     });
 
     // Email verification handler
     static verifyEmail = asyncFun(async (req, res) => {
         try {
             const { token } = req.query;
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);  // Token verification
-            const userId = decoded.userId;
-            await User.verifyEmail(userId);  // Mark email as verified
+            if (!token) return res.status(400).send({ message: 'Token is required' });
+
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const user = await User.getUserById(decoded.userId);
+            if (!user) return res.status(404).send({ message: 'User not found' });
+
+            if (user.account_verified) {
+                return res.status(400).send({ message: 'Email is already verified' });
+            }
+
+            await User.verifyEmail(user.id);
             res.send({ message: 'Email verified successfully!' });
         } catch (error) {
-            res.status(400).send({ message: 'Invalid or expired token' });
+            if (error.name === 'TokenExpiredError') {
+                return res.status(400).send({ message: 'Token has expired. Please request a new verification email.' });
+            } else if (error.name === 'JsonWebTokenError') {
+                return res.status(400).send({ message: 'Invalid token. Please request a new verification email.' });
+            }
+            res.status(500).send({ message: 'An error occurred during email verification' });
         }
     });
 
@@ -68,7 +88,7 @@ class authController {
         const user = await User.getUserByemail(email);
         if (!user) return res.status(400).send({ message: 'User not found' });
 
-        const isMatch = await user.comparePassword(password);
+        const isMatch = await bcrypt.comparePassword(password, user.password);
         if (!isMatch) return res.status(400).send({ message: 'Invalid credentials' });
 
         const token = signToken(user.id, user.role);
@@ -82,9 +102,8 @@ class authController {
         const user = await User.getUserByemail(email);
         if (!user) return res.status(400).send({ message: 'User not found' });
 
-        // Generate reset token
-        const resetToken = signToken(user.id);
-        const resetLink = `${process.env.URL}/api/v1/user/reset-password?token=${resetToken}`;
+        const resetToken = signToken(user.id, user.role);
+        const resetLink = `${process.env.URL}/api/v1/auth/reset-password?token=${resetToken}`;
 
         const mailer = new mailService();
         await mailer.sendPasswordResetEmail(email, resetLink);
@@ -98,11 +117,9 @@ class authController {
             const { token } = req.query;
             const { password } = req.body;
 
-            // Verify token
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             const userId = decoded.userId;
 
-            // Hash new password and update user
             const hashedPassword = await bcrypt.hashPassword(password);
             await User.updateUserById(userId, { password: hashedPassword });
 
@@ -126,38 +143,64 @@ class authController {
         res.send({ message: 'Password changed successfully' });
     });
 
-    static restrictTo = (...roles) => {
-        return asyncFun(async (req, res, next) => {
-            console.log(roles);
-            console.log(req.user.role);
-            if ( !roles.includes(req.user.role) && !(roles.includes("User") &&  req.user.id === req.params.id )) {
-                return res.status(403).send({ 
-                    message: "You do not have permission to perform this action" 
-                });
-            }
-            console.log(req.body);
-            next();
-    })};
+    // Resend verification email handler
+    static resendVerificationEmail = asyncFun(async (req, res) => {
+        const { email } = req.body;
+        if (!email) return res.status(400).send({ message: "Email is required" });
 
-    static verifiyUser = asyncFun( (req,res,nxt) => {
-        if(!req.user.isVerified) res.status(403).send({"message":"Please Verify your Email First"});
-        nxt();
+        const user = await User.getUserByemail(email);
+        if (!user) return res.status(404).send({ message: "User not found" });
+
+        if (user.account_verified) {
+            return res.status(400).send({ message: "Account is already verified" });
+        }
+
+        const verificationToken = signToken(user.id, user.role);
+        const verificationLink = `${process.env.URL}/api/v1/auth/verify-email?token=${verificationToken}`;
+
+        const mailer = new mailService();
+        await mailer.sendVerificationEmail(email, verificationLink);
+
+        res.send({ message: "Verification email sent successfully" });
     });
 
-    static validateAuth = asyncFun( async (req,res,nxt) => {
+    // Restriction middleware
+    static restrictTo = (...roles) => {
+        return asyncFun(async (req, res, next) => {
+            if (!roles.includes(req.user.role) &&
+                !(roles.includes("User") && req.user.id === req.params.id)) {
+                return res.status(403).send({
+                    message: "You do not have permission to perform this action"
+                });
+            }
+            next();
+        });
+    };
+
+    // Check if user's email is verified
+    static verifyUser = asyncFun(async (req, res, next) => {
+        if (!req.user.account_verified) {
+            return res.status(403).send({ message: "Please verify your email first" });
+        }
+        next();
+    });
+
+    // Middleware to validate JWT token and extract user
+    static validateAuth = asyncFun(async (req, res, next) => {
         const token = req.headers['x-auth-token'];
+        if (!token) return res.status(401).send({ message: "No token provided" });
+
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             const userData = await User.getUserById(decoded.userId);
+            if (!userData) return res.status(401).send({ message: "User not found" });
+
             req.user = userData;
-            nxt(); 
+            next();
         } catch (error) {
-            return res.status(400).send({
-                message: "Invalid Token"
-            });
+            return res.status(400).send({ message: "Invalid token" });
         }
     });
-    
 }
 
 export default authController;

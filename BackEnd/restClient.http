@@ -1,0 +1,65 @@
+### Test Root Endpoint
+GET http://localhost:3000/
+
+### Test Signup Endpoint
+POST http://localhost:3000/api/v1/auth/signup
+Content-Type: application/json
+
+{
+  "first_name": "Mohamed",
+  "middle_name": "Ahmed",
+  "last_name": "Abdelhawab",
+  "gender": "male",
+  "birth_date": "1990-01-01",
+  "email": "aymanmoataz23@gmail.com",
+  "password": "Password123!",
+  "phone": "1234567890",
+  "current_address": "123 Main St",
+  "profile_image": null
+}
+
+### Test Signin Endpoint
+POST http://localhost:3000/api/v1/auth/signin
+Content-Type: application/json
+
+{
+  "email": "abdelwahab1903@gmail.com",
+  "password": "Password123!"
+}
+
+### Test Get All Users Endpoint
+GET http://localhost:3000/api/v1/users
+
+### Test Get User by ID Endpoint
+GET http://localhost:3000/api/v1/users/1
+
+### Test Verify Email Endpoint
+GET http://localhost:3000/api/v1/user/verify-email?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMzLCJpYXQiOjE3NDc2NTI5NDQsImV4cCI6MTc0NzczOTM0NH0.oRfMKIYXfb_YdU6zigP_I6sxufgh93y4tEmZxWfZQPM
+
+### Test Resend Verification Email Endpoint
+POST http://localhost:3000/api/v1/auth/resend-verification-email
+Content-Type: application/json
+
+{
+  "email": "abdelwahab1903@gmail.com"
+}
+
+### Test Verify Email with Token
+GET http://localhost:3000/api/v1/auth/verify-email?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMzLCJyb2xlIjoidXNlciIsImlhdCI6MTc0NzY1NDc4OCwiZXhwIjoxNzQ3NzQxMTg4fQ.kEWwh26Gk-OmEIebT3wC9f6lkHdn1nvNXuF52pBjVLQ
+
+### Test Reset Password Endpoint
+POST http://localhost:3000/api/v1/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "abdelwahab1903@gmail.com"
+}
+
+
+### Test Reset Password Endpoint
+POST http://localhost:3000/api/v1/auth/reset-password?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjM0LCJyb2xlIjoidXNlciIsImlhdCI6MTc0NzY1NzgwMCwiZXhwIjoxNzQ3NzQ0MjAwfQ.8CkIZn2CoZSjhZkclYcEOoisVmn_3KEyMi19wZH13Kk
+Content-Type: application/json
+
+{
+  "password": "karim121212"
+}
