@@ -54,7 +54,8 @@ CREATE TABLE locates (
     national_id VARCHAR(20) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
     FOREIGN KEY (district_id) REFERENCES Districts(id) ON DELETE CASCADE,
-    PRIMARY KEY (district_id, national_id)
+    PRIMARY KEY (district_id, user_id)
+    UNIQUE KEY (national_id, district_id)
 );
 
 select 'user ok';

@@ -1,21 +1,26 @@
 import express from 'express';
 import UserController from '../controllers/user.controller.js';
+import { verifyToken, isAdmin } from '../middlewares/auth.middleware.js';
+import upload from '../middlewares/upload.middleware.js';
 
 const router = express.Router();
 
-// Create a new user
-router.post('/', UserController.createUser);
+// Apply authentication middleware to all routes
+router.use(verifyToken);
 
-// Get all users
-router.get('/', UserController.getAllUsers);
+// Get all users - admin only
+router.get('/', isAdmin, UserController.getAllUsers);
 
-// Get a user by ID
+// Get a user by ID - authenticated user can only get their own profile
 router.get('/:id', UserController.getUserById);
 
-// Update user profile data
+// Update user profile data - authenticated user can only update their own profile
 router.patch('/:id/profile', UserController.updateUserProfile);
 
-// Delete a user
-router.delete('/:id', UserController.deleteUser);
+// Upload profile photo - authenticated user can only upload their own photo
+router.post('/:id/profile/photo', upload.single('profile_photo'), UserController.uploadProfilePhoto);
+
+// Delete a user - admin only
+router.delete('/:id', isAdmin, UserController.deleteUser);
 
 export default router;

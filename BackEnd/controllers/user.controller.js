@@ -1,10 +1,17 @@
 import User from '../models/user.model.js';
 import asyncFun from '../middlewares/async.function.js';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class UserController {
+        // Admin only - already protected by middleware
         static getAllUsers = asyncFun(async (req, res) => {
                 const users = await User.getAllUsers();
-                res.status(200).send({ message: "OK", data: users });
+                res.status(200).send({ message: "Users retrieved successfully", data: users });
         });
 
         static getUserById = asyncFun(async (req, res) => {
@@ -24,6 +31,14 @@ class UserController {
         });
 
         static updateUserProfile = asyncFun(async (req, res) => {
+                // Check if user is updating their own profile or is admin
+                if (req.user.role !== 'admin' && req.user.id !== parseInt(req.params.id)) {
+                        return res.status(403).send({
+                                message: "Access denied - You can only update your own profile",
+                                data: null
+                        });
+                }
+
                 // Extract allowed fields from request body
                 const allowedUpdates = {
                         first_name: req.body.first_name,
@@ -66,6 +81,69 @@ class UserController {
                 });
         });
 
+        static uploadProfilePhoto = asyncFun(async (req, res) => {
+                try {
+                        // Check if user is uploading their own photo or is admin
+                        if (req.user.role !== 'admin' && req.user.id !== parseInt(req.params.id)) {
+                                // Delete uploaded file if unauthorized
+                                if (req.file) {
+                                        fs.unlinkSync(req.file.path);
+                                }
+                                return res.status(403).send({
+                                        message: "Access denied - You can only upload your own profile photo",
+                                        data: null
+                                });
+                        }
+
+                        if (!req.file) {
+                                return res.status(400).send({
+                                        message: "No file uploaded",
+                                        data: null
+                                });
+                        }
+
+                        // Get current user to verify it exists and get current photo
+                        const user = await User.getUserById(req.params.id);
+                        if (!user) {
+                                // Delete uploaded file if user not found
+                                fs.unlinkSync(req.file.path);
+                                return res.status(404).send({
+                                        message: "User not found",
+                                        data: null
+                                });
+                        }
+
+                        // Delete old profile photo if it exists
+                        if (user.profile_image) {
+                                const oldPhotoPath = path.join(__dirname, '../public/uploads/profiles', path.basename(user.profile_image));
+                                if (fs.existsSync(oldPhotoPath)) {
+                                        fs.unlinkSync(oldPhotoPath);
+                                }
+                        }
+
+                        // Update user profile with new photo filename
+                        const photoUrl = `/uploads/profiles/${req.file.filename}`;
+                        const updatedUser = await User.updateUserById(req.params.id, {
+                                profile_image: photoUrl
+                        });
+
+                        res.status(200).send({
+                                message: "Profile photo uploaded successfully",
+                                data: {
+                                        user: updatedUser,
+                                        photo_url: photoUrl
+                                }
+                        });
+                } catch (error) {
+                        // Delete uploaded file if there's an error
+                        if (req.file) {
+                                fs.unlinkSync(req.file.path);
+                        }
+                        throw error;
+                }
+        });
+
+        // Admin only - already protected by middleware
         static deleteUser = asyncFun(async (req, res) => {
                 const user = await User.getUserById(req.params.id);
                 if (!user) {

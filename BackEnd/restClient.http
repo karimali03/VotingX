@@ -63,3 +63,136 @@ Content-Type: application/json
 {
   "password": "karim121212"
 }
+
+### Test Locate API
+GET http://localhost:3000/api/v1/locates
+
+### Test Get Locate by ID
+GET http://localhost:3000/api/v1/locates/1
+
+### Test Create Locate
+POST http://localhost:3000/api/v1/locates
+Content-Type: application/json
+
+{
+  "name": "New Locate",
+  "description": "Description of the locate"
+}
+
+### Test Update Locate
+PUT http://localhost:3000/api/v1/locates/1
+Content-Type: application/json
+
+{
+  "name": "Updated Locate",
+  "description": "Updated description"
+}
+
+### Test Delete Locate
+DELETE http://localhost:3000/api/v1/locates/1
+
+### Test Location API
+GET http://localhost:3000/api/v1/locations
+
+### Test Get Location by ID
+GET http://localhost:3000/api/v1/location/countries/EGY/governorates/15/cities
+
+### Test Link User with District
+POST http://localhost:3000/api/v1/locates/link
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "nationalId":"12345678901234",
+  "districtId": 31
+}
+
+### Test Get User-District Link
+GET http://localhost:3000/api/v1/locates/link/1/31
+
+### Test Update User-District Link
+PUT http://localhost:3000/api/v1/locates/link/1/101
+Content-Type: application/json
+
+{
+  "newDistrictId": 15
+}
+
+### Test Remove User-District Link
+DELETE http://localhost:3000/api/v1/locates/link/1/31
+
+### Test Profile Photo Upload
+POST http://localhost:3000/api/v1/users/1/profile/photo
+Authorization: Bearer your-token-here
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="profile_photo"; filename="test.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/test.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Test Profile Photo Upload - No Auth Token
+POST http://localhost:3000/api/v1/users/1/profile/photo
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="profile_photo"; filename="test.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/test.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Test Profile Photo Upload - Wrong User ID
+POST http://localhost:3000/api/v1/users/2/profile/photo
+Authorization: Bearer your-token-here
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="profile_photo"; filename="test.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/test.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Test Profile Photo Upload - Invalid File Type
+POST http://localhost:3000/api/v1/users/1/profile/photo
+Authorization: Bearer your-token-here
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="profile_photo"; filename="test.txt"
+Content-Type: text/plain
+
+< ./test-files/test.txt
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Test Get User Profile with Photo
+GET http://localhost:3000/api/v1/users/1
+Authorization: Bearer your-token-here
+
+### Test Update User Profile
+PATCH http://localhost:3000/api/v1/users/1/profile
+Authorization: Bearer your-token-here
+Content-Type: application/json
+
+{
+    "first_name": "John",
+    "last_name": "Doe",
+    "current_address": "123 Main St"
+}
+
+
+
+### Test Upload Profile Photo
+POST http://localhost:3000/api/v1/users/34/profile/photo
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjM0LCJyb2xlIjoidXNlciIsImlhdCI6MTc0NzY3MTMwMCwiZXhwIjoxNzQ3NzU3NzAwfQ.Cl9Z7ROMDjmOuUUdLxqfwlvY1EuJRuI5Ua0BjhvMSeA
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="profile_photo"; filename="photo.jpeg"
+Content-Type: image/jpeg
+
+< ./photo.jpeg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--

@@ -86,13 +86,35 @@ class authController {
         const { email, password } = req.body;
 
         const user = await User.getUserByemail(email);
-        if (!user) return res.status(400).send({ message: 'User not found' });
+        if (!user) return res.status(400).send({
+            message: 'Invalid email or password',
+            data: null
+        });
 
         const isMatch = await bcrypt.comparePassword(password, user.password);
-        if (!isMatch) return res.status(400).send({ message: 'Invalid credentials' });
+        if (!isMatch) return res.status(400).send({
+            message: 'Invalid email or password',
+            data: null
+        });
 
         const token = signToken(user.id, user.role);
-        res.header('x-auth-token', token).send({ message: 'Sign in successful' });
+
+        // Remove sensitive data
+        delete user.password;
+
+        res.status(200).send({
+            message: 'Sign in successful',
+            data: {
+                token,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    role: user.role,
+                    first_name: user.first_name,
+                    last_name: user.last_name
+                }
+            }
+        });
     });
 
     // Forgot password handler
